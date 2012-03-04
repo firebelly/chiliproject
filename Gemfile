@@ -19,6 +19,13 @@ group :test do
   gem 'capybara'
 end
 
+gem 'unicorn'
+
+# add capify-fb for deployment
+group :development do
+  gem "capify-fb", :git => 'git@github.com:firebelly/capify-fb'
+end
+
 group :ldap do
   gem "net-ldap", '~> 0.2.2'
 end
@@ -56,10 +63,10 @@ platforms :mri, :mingw do
     gem "mysql2", "~> 0.2.7"
   end
 
-  group :postgres do
-    gem "pg"
+  #group :postgres do
+  #  gem "pg"
     #   gem "postgres-pr"
-  end
+  #end
 end
 
 platforms :mri_18, :mingw_18 do
