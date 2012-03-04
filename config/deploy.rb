@@ -10,6 +10,14 @@ require "capify-fb/backup" # handles backup gem config, addition to cron, and ru
 require "capify-fb/unicorn" # handles unicorn.rb setup, start, stop, restart
 require "capify-fb/nginx" # handles nginx restart
 
+# Custom task for configuration.yml
+namespace :deploy do
+  task :configuration, :except => { :no_release => true } do
+    run "ln -nfs #{shared_path}/config/configuration.yml #{release_path}/config/configuration.yml"  
+  end
+  after "deploy:finalize_update", "deploy:configuration"
+end
+
 # handles s3 credentials outside of repository and appends to config/application.rb file
 # set :use_s3, true
 # require "capify-fb/s3"
