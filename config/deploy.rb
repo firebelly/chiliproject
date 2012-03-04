@@ -10,12 +10,20 @@ require "capify-fb/backup" # handles backup gem config, addition to cron, and ru
 require "capify-fb/unicorn" # handles unicorn.rb setup, start, stop, restart
 require "capify-fb/nginx" # handles nginx restart
 
-# Custom task for configuration.yml
-namespace :deploy do
-  task :configuration, :except => { :no_release => true } do
+# Custom task for configuration.yml & session_store
+namespace :chili do
+  task :configuration, :roles => :app, :except => { :no_release => true } do
     run "ln -nfs #{shared_path}/config/configuration.yml #{release_path}/config/configuration.yml"  
+    run "ln -nfs #{shared_path}/config/initializers/session_store.rb #{release_path}/config/initializers/session_store.rb"  
   end
-  after "deploy:finalize_update", "deploy:configuration"
+  task :clear_cache, :roles => :app, :except => { :no_release => true } do
+    run "cd #{release_path}; bundle exec rake tmp:cache:clear; bundle exec rake tmp:sessions:clear; bundle exec rake log:clear"
+  end
+  task :migrate_plugins, :roles => :db, :except => { :no_release => true } do
+    run "cd #{release_path}; bundle exec rake db:migrate:plugins"
+  end
+  after "deploy:migrate", "chili:migrate_plugins"
+  after "deploy:finalize_update", "chili:configuration", "chili:clear_cache"
 end
 
 # handles s3 credentials outside of repository and appends to config/application.rb file
