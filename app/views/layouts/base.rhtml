@@ -75,7 +75,6 @@
         </li>
         <% end %>
         <li>
-          <%= render_menu_node(help_menu_item) %>
           <% unless User.current.logged? %>
             <% if Setting.self_registration? %>
             <li>
@@ -143,7 +142,7 @@
 
   <div id="footer">
     <div class="bgl"><div class="bgr">
-        <%= l(:text_powered_by, :link => link_to(Redmine::Info.app_name, Redmine::Info.url)) %>
+        <%= l(:text_powered_by, :link => link_to(Redmine::Info.app_name, Redmine::Info.url, :target => "_blank")) %>
       </div></div>
   </div>
 
