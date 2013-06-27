@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,6 +13,7 @@
 #++
 
 class TimeEntry < ActiveRecord::Base
+  include Redmine::SafeAttributes
   # could have used polymorphic association
   # project association here allows easy loading of time entries at project level with one database trip
   belongs_to :project
@@ -36,6 +37,8 @@ class TimeEntry < ActiveRecord::Base
     :include => :project,
     :conditions => Project.allowed_to_condition(args.first || User.current, :view_time_entries)
   }}
+
+  safe_attributes 'hours', 'comments', 'issue_id', 'activity_id', 'spent_on', 'custom_field_values'
 
   def after_initialize
     if new_record? && self.activity.nil?

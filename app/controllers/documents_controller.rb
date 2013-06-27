@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -43,7 +43,8 @@ class DocumentsController < ApplicationController
   end
 
   def new
-    @document = @project.documents.build(params[:document])
+    @document = @project.documents.build
+    @document.safe_attributes = params[:document]
     if request.post?
       if User.current.allowed_to?(:add_document_watchers, @project) && params[:document]['watcher_user_ids'].present?
         @document.watcher_user_ids = params[:document]['watcher_user_ids']
@@ -84,7 +85,7 @@ class DocumentsController < ApplicationController
 
     if attachments.present? && attachments[:files].present? && Setting.notified_events.include?('document_added')
       # TODO: refactor
-      attachments.first.container.recipients.each do |recipient|
+      @document.recipients.each do |recipient|
         Mailer.deliver_attachments_added(attachments[:files], recipient)
       end
     end

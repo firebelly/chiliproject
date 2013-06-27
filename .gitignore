@@ -27,5 +27,8 @@
 doc/app
 /.bundle
 /.rvmrc*
+/.ruby-version
+/.ruby-gemset
 /*.iml
 /.idea
+.rbx

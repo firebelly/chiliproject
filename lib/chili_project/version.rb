@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@ module ChiliProject
   module VERSION #:nodoc:
 
     MAJOR = 3
-    MINOR = 0
+    MINOR = 8
     PATCH = 0
     TINY  = PATCH # Redmine compat
 
@@ -43,7 +43,7 @@ module ChiliProject
         git_dir = Rails.root.join('.git')
 
         if File.directory? git_dir
-          git.send(:shellout, "#{git.sq_bin} --git-dir=\"#{git_dir}\" rev-parse --short=9 HEAD") { |io| io.read }.to_s.chomp
+          git.send(:shellout, "#{git.sq_bin} --git-dir=#{git.shell_quote git_dir.to_s} rev-parse --short=9 HEAD") { |io| io.read }.to_s.chomp
         end
       end
     end

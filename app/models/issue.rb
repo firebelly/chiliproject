@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -368,7 +368,7 @@ class Issue < ActiveRecord::Base
   def attachment_removed(obj)
     init_journal(User.current)
     create_journal
-    last_journal.update_attribute(:changes, {"attachments_" + obj.id.to_s => [obj.filename, nil]}.to_yaml)
+    last_journal.update_attribute(:changes, {"attachments_" + obj.id.to_s => [obj.filename, nil]})
   end
 
   # Return true if the issue is closed, otherwise false
@@ -705,6 +705,15 @@ class Issue < ActiveRecord::Base
       end
     end
     projects
+  end
+
+  # Overrides Redmine::Acts::Journalized::Permissions
+  #
+  # The default assumption is that journals have the same permissions
+  # as the journaled object, issue notes have separate permissions though
+  def journal_editable_by?(journal, user)
+    return true if journal.user == user && user.allowed_to?(:edit_own_issue_notes, project)
+    user.allowed_to? :edit_issue_notes, project
   end
 
   private

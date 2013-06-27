@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -185,8 +185,10 @@ private
   def self.find_or_default(name)
     name = name.to_s
     raise "There's no setting named #{name}" unless @@available_settings.has_key?(name)
-    setting = find_by_name(name)
-    setting ||= new(:name => name, :value => @@available_settings[name]['default']) if @@available_settings.has_key? name
+    find_by_name(name) or new do |s|
+      s.name  = name
+      s.value = @@available_settings[name]['default']
+    end
   end
 
   def self.cache_key(name)

@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -229,6 +229,13 @@ begin
           assert_equal "latin-1-dir/test-#{@char_1}-subdir/test-#{@char_1}-2.txt", f1.path
           assert_equal 'file', f1.kind
         end
+      end
+
+      def test_default_branch
+        @adapter.send :scm_cmd, 'branch', '-m', 'master', 'non-master-default-branch'
+        assert_equal 'non-master-default-branch', @adapter.default_branch
+      ensure
+        @adapter.send :scm_cmd, 'branch', '-m', 'non-master-default-branch', 'master'
       end
 
       private

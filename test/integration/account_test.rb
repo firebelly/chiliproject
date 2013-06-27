@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -99,6 +99,15 @@ class AccountTest < ActionController::IntegrationTest
 
     log_user('jsmith', 'newpass')
     assert_equal 0, Token.count
+  end
+
+  def test_self_register_link_present
+    Setting.self_registration = '3'
+    Setting.login_required = '1'
+
+    get "/"
+    follow_redirect!
+    assert_select "a[href*=?]", "/account/register", :text => "Register"
   end
 
   def test_register_with_automatic_activation

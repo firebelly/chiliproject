@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -51,6 +51,10 @@ module ChiliProject
         end if context.environments.present?
         vars += context.scopes.collect(&:keys).flatten
         vars.uniq.sort
+      end
+
+      register "today" do
+        Date.today.to_s
       end
 
       # DEPRACATED: This is just a hint on how to use Liquid introspection

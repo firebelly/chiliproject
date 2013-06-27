@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@ require 'cgi'
 
 module ApplicationHelper
   include Redmine::I18n
-  include GravatarHelper::PublicMethods
+  include Gravatarify::Helper
 
   extend Forwardable
   def_delegators :wiki_helper, :wikitoolbar_for, :heads_for_wiki_formatter
@@ -436,6 +436,7 @@ module ApplicationHelper
       css << 'theme-' + theme.name
     end
 
+    css << 'project-' + @project.id.to_s if @project.present?
     css << 'controller-' + params[:controller] if params[:controller]
     css << 'action-' + params[:action] if params[:action]
     css.join(' ')
@@ -502,7 +503,7 @@ module ApplicationHelper
 
     @parsed_headings = []
     text = parse_non_pre_blocks(text) do |text|
-      [:parse_inline_attachments, :parse_wiki_links, :parse_redmine_links, :parse_headings].each do |method_name|
+      [:parse_inline_attachments, :parse_wiki_links, :parse_redmine_links, :parse_headings, :parse_relative_urls].each do |method_name|
         send method_name, text, project, obj, attr, only_path, options
       end
     end
@@ -541,6 +542,41 @@ module ApplicationHelper
       parsed << "</#{tag}>"
     end
     parsed
+  end
+
+  RELATIVE_LINK_RE = %r{
+    <a
+    (?:
+      (\shref=
+        (?:                         # the href and link
+          (?:'(\/[^>]+?)')|
+          (?:"(\/[^>]+?)")
+        )
+      )|
+      [^>]
+    )*
+    >
+    [^<]*?<\/a>                     # content and closing link tag.
+  }x unless const_defined?(:RELATIVE_LINK_RE)
+
+  def parse_relative_urls(text, project, obj, attr, only_path, options)
+    return if only_path
+    text.gsub!(RELATIVE_LINK_RE) do |m|
+      href, relative_url = $1, $2 || $3
+      next m unless href.present?
+      if defined?(request) && request.present?
+        # we have a request!
+        protocol, host_with_port = request.protocol, request.host_with_port
+      elsif @controller
+        # use the same methods as url_for in the Mailer
+        url_opts = @controller.class.default_url_options
+        next m unless url_opts && url_opts[:protocol] && url_opts[:host]
+        protocol, host_with_port = "#{url_opts[:protocol]}://", url_opts[:host]
+      else
+        next m
+      end
+      m.sub href, " href=\"#{protocol}#{host_with_port}#{relative_url}\""
+    end
   end
 
   def parse_inline_attachments(text, project, obj, attr, only_path, options)
@@ -816,7 +852,7 @@ module ApplicationHelper
   def back_url_hidden_field_tag
     back_url = params[:back_url] || request.env['HTTP_REFERER']
     back_url = CGI.unescape(back_url.to_s)
-    hidden_field_tag('back_url', CGI.escape(back_url)) unless back_url.blank?
+    hidden_field_tag('back_url', CGI.escape(back_url), :id => nil) unless back_url.blank?
   end
 
   def check_all_links(form_name)
@@ -832,12 +868,10 @@ module ApplicationHelper
     pcts << (100 - pcts[1] - pcts[0])
     width = options[:width] || '100px;'
     legend = options[:legend] || ''
-    content_tag('table',
-      content_tag('tr',
-        (pcts[0] > 0 ? content_tag('td', '', :style => "width: #{pcts[0]}%;", :class => 'closed') : '') +
-        (pcts[1] > 0 ? content_tag('td', '', :style => "width: #{pcts[1]}%;", :class => 'done') : '') +
-        (pcts[2] > 0 ? content_tag('td', '', :style => "width: #{pcts[2]}%;", :class => 'todo') : '')
-      ), :class => 'progress', :style => "width: #{width};") +
+    content_tag('div',
+      content_tag('div', '', :style => "width: #{pcts[0]}%;", :class => 'closed ui-progressbar-value ui-widget-header ui-corner-left') +
+      content_tag('div', '', :style => "width: #{pcts[1]}%;", :class => 'done ui-progressbar-value ui-widget-header'),
+      :class => 'progress ui-progressbar ui-widget ui-widget-content ui-corner-all', :style => "width: #{width};") +
       content_tag('p', legend, :class => 'pourcent')
   end
 
@@ -850,7 +884,7 @@ module ApplicationHelper
   def context_menu(url)
     unless @context_menu_included
       content_for :header_tags do
-        javascript_include_tag('context_menu') +
+        javascript_include_tag('context_menu.jquery') +
           stylesheet_link_tag('context_menu')
       end
       if l(:direction) == 'rtl'
@@ -860,7 +894,7 @@ module ApplicationHelper
       end
       @context_menu_included = true
     end
-    javascript_tag "new ContextMenu('#{ url_for(url) }')"
+    javascript_tag "jQuery(document).ContextMenu('#{ url_for(url) }')"
   end
 
   def context_menu_link(name, url, options={})
@@ -880,33 +914,25 @@ module ApplicationHelper
   end
 
   def calendar_for(field_id)
-    include_calendar_headers_tags
-    image_tag("calendar.png", {:id => "#{field_id}_trigger",:class => "calendar-trigger"}) +
-    javascript_tag("Calendar.setup({inputField : '#{field_id}', ifFormat : '%Y-%m-%d', button : '#{field_id}_trigger' });")
+    javascript_tag("jQuery('##{field_id}').datepicker(datepickerSettings)")
   end
 
-  def include_calendar_headers_tags
-    unless @calendar_headers_tags_included
-      @calendar_headers_tags_included = true
-      content_for :header_tags do
-        start_of_week = case Setting.start_of_week.to_i
-        when 1
-          'Calendar._FD = 1;' # Monday
-        when 7
-          'Calendar._FD = 0;' # Sunday
-        when 6
-          'Calendar._FD = 6;' # Saturday
-        else
-          '' # use language
-        end
-
-        javascript_include_tag('calendar/calendar') +
-        javascript_include_tag("calendar/lang/calendar-#{current_language.to_s.downcase}.js") +
-        javascript_tag(start_of_week) +
-        javascript_include_tag('calendar/calendar-setup') +
-        stylesheet_link_tag('calendar')
-      end
+  def jquery_datepicker_settings
+    start_of_week = Setting.start_of_week.to_s
+    start_of_week_string = start_of_week.present? ? "firstDay: '#{start_of_week}', " : ''
+    script = javascript_tag("var datepickerSettings = {" +
+                   start_of_week_string +
+                   "showOn: 'both', " +
+                   "buttonImage: '" + path_to_image('/images/calendar.png') + "', " +
+                   "buttonImageOnly: true, " +
+                   "showButtonPanel: true, " +
+                   "dateFormat: 'yy-mm-dd' " +
+                   "}")
+    unless current_language == :en
+      jquery_locale = l("jquery.ui", :default => current_language.to_s)
+      script << javascript_include_tag("libs/ui/i18n/jquery.ui.datepicker-#{jquery_locale}.js")
     end
+    script
   end
 
   def content_for(name, content = nil, &block)
@@ -917,6 +943,19 @@ module ApplicationHelper
 
   def has_content?(name)
     (@has_content && @has_content[name]) || false
+  end
+
+  # Returns the gravatar image tag for the given email
+  # +email+ is a string with an email address
+  def gravatar(email, options={})
+    gravatarify_options = {}
+    gravatarify_options[:secure] = options.delete :ssl
+    [:default, :size, :rating, :filetype].each {|key| gravatarify_options[key] = options.delete key}
+    # Default size is 50x50 px
+    gravatarify_options[:size] ||= 50
+    options[:class] ||= 'gravatar'
+    gravatarify_options[:html] = options
+    gravatar_tag email, gravatarify_options
   end
 
   # Returns the avatar image tag for the given +user+ if avatars are enabled
@@ -948,6 +987,7 @@ module ApplicationHelper
     unless User.current.pref.warn_on_leaving_unsaved == '0'
       tags << "\n" + javascript_tag("Event.observe(window, 'load', function(){ new WarnLeavingUnsaved('#{escape_javascript( l(:text_warn_on_leaving_unsaved) )}'); });")
     end
+    tags << jquery_datepicker_settings
     tags
   end
 

@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -89,12 +89,12 @@ class Changeset < ActiveRecord::Base
   # Attribute reader for committer that encodes the committer string to
   # the repository log encoding (e.g. UTF-8)
   def committer
-    self.class.to_utf8(read_attribute(:committer), repository.repo_log_encoding)
+    self.class.to_utf8(read_attribute(:committer), repository_encoding)
   end
 
   def before_create
-    self.committer = self.class.to_utf8(self.committer, repository.repo_log_encoding)
-    self.comments  = self.class.normalize_comments(self.comments, repository.repo_log_encoding)
+    self.committer = self.class.to_utf8(self.committer, repository_encoding)
+    self.comments  = self.class.normalize_comments(self.comments, repository_encoding)
     self.user = repository.find_committer_user(self.committer)
   end
 

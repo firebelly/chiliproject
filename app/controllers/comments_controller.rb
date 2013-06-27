@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,10 @@ class CommentsController < ApplicationController
 
   verify :method => :post, :only => :create, :render => {:nothing => true, :status => :method_not_allowed }
   def create
-    @comment = Comment.new(params[:comment])
+    raise Unauthorized unless @news.commentable?
+
+    @comment = Comment.new
+    @comment.safe_attributes = params[:comment]
     @comment.author = User.current
     if @news.comments << @comment
       flash[:notice] = l(:label_comment_added)

@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,6 +13,7 @@
 #++
 
 class Document < ActiveRecord::Base
+  include Redmine::SafeAttributes
   belongs_to :project
   belongs_to :category, :class_name => "DocumentCategory", :foreign_key => "category_id"
   acts_as_attachable :delete_permission => :manage_documents
@@ -32,13 +33,17 @@ class Document < ActiveRecord::Base
   named_scope :visible, lambda {|*args| { :include => :project,
                                           :conditions => Project.allowed_to_condition(args.first || User.current, :view_documents) } }
 
+  safe_attributes 'category_id', 'title', 'description'
+
   def visible?(user=User.current)
     !user.nil? && user.allowed_to?(:view_documents, project)
   end
 
   def after_initialize
     if new_record?
-      self.category ||= DocumentCategory.default
+      # FIXME: on Rails 3 use this instead
+      # self.category ||= DocumentCategory.default
+      self.category_id = DocumentCategory.default.id if self.category_id == 0
     end
   end
 

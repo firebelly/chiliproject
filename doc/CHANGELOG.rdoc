@@ -1,5 +1,136 @@
 = ChiliProject Changelog
 
+== 2013-03-19 v3.8.0
+
+* Bug #1121: Date Picker Icons disappear when changing the Tracker
+* Bug #1164: Error in "rake db:migrate:down VERSION=20100714111652"
+* Bug #1248: Routing issue
+* Security - Bug #1252: Update Rails to 2.3.18
+
+== 2013-02-13 v3.7.0
+
+* Security - Feature #1233: Bump rails to 2.3.17 to address [CVE-2013-0276]
+* Security - Bug #1234: Potential vulnerability in token authentication when running on MySQL
+* Bug #1235: Liquid's last filter errors out
+
+== 2013-01-29 v3.6.0
+
+* Bug #1216: "Only for things I watch or I'm involved in" sends notifications only for issues
+* Security - Bug #1219: Vulnerability in JSON Parser in Ruby on Rails (CVE-2013-0333)
+
+== 2013-01-16 v3.5.1
+
+* Security - Bug #1208: Unsafe Query Generation Risk in Ruby on Rails (CVE-2013-0155)
+
+== 2013-01-09 v3.5.0
+
+* Security - Bug #1200: Multiple vulnerabilities in parameter parsing in Action Pack (CVE-2013-0156)
+
+== 2013-01-06 v3.4.0
+
+* Bug #904: Copy workflow doesn’t work on per-author / per-assigned modifier
+* Bug #1087: Document category is not saved properly
+* Bug #1090: List of saved queries is not accessible outside of a project
+* Bug #1111: use a monospace font in wiki-text
+* Security – Bug #1113: Potential XSS Vulnerability in Ruby on Rails
+* Security – Bug #1114: XSS Vulnerability in strip_tags
+* Bug #1118: Missing caption in file redmine.rb
+* Bug #1134: HEAD is not considered a read-only method in Redmine.pm
+* Bug #1142: Darcs repository adapter doesn’t work with newer versions (~2.5) of Darcs
+* Bug #1144: configuration.yml.example is broken
+* Bug #1188: Selecting “Current project and its subprojects” isn’t saving.
+* Bug #1194: Problems migrating from chili 2.0.0 to 3.3.0
+* Security – Bug #1195: SQL Injection Vulnerability in Ruby on Rails (CVE-2012-5664)
+* Bug #1197: Links to new and existing Pages in chili wikis have the same color. Thats boring.
+* Task #1192: Add a CONTRIBUTION document
+
+== 2012-07-15 v3.3.0
+
+* Bug #935: Serialization problem in Setting model
+* Bug #944: Engines::Testing.set_fixture_path appends array to $LOAD_PATH in Ruby 1.9
+* Bug #952: Engines tests are broken in current versions of Ruby
+* Bug #979: Register / Login not available if authentication required
+* Bug #1050: Create vagrant file/chef cookbook
+* Bug #1051: HTML tag should use users language
+* Bug #1063: Hover on even table rows doesn't highlight
+* Bug #1067: Upgrade 20100714111653_build_initial_journals_for_acts_as_journalized.rb crashed with method_missing "repo_log_encoding"
+* Bug #1070: Re-compress all the image assets
+* Bug #1074: Rake tasks of plugins in vendor/chiliproject_plugins are not loaded
+* Bug #1075: Can no longer render unordered lists within ordered lists
+* Bug #1078: "incompatible character encoding" with LDAP auth
+* Feature #817: Replace the current custom datepicker with the one shipped with jQuery UI
+* Feature #1017: Custom style (css) per project
+* Feature #1018: Switch to an HTML5 doctype
+* Feature #1046: Enable use of the "<<me>>" operator when querying custom fields
+* Feature #1054: Include modernizr JS
+* Feature #1055: Add a today variable to liquid
+* Feature #1056: Replace the table soup progress bars with HTML5 meters
+* Feature #1076: Update jQuery libraries to their latest version
+
+== 2012-06-13 v3.2.2
+
+* Bug #1036: Ruby on Rails Unsafe Query Generation Risk in Ruby on Rails (CVE-2012-2694)
+* Bug #1037: SQL Injection Vulnerability in Ruby on Rails (CVE-2012-2695)
+
+== 2012-06-10 v3.2.1
+
+* Bug #1034: Gravatar
+
+== 2012-06-09 v3.2.0
+
+* Bug #844: Set autocomplete=off for some fields in Registration form
+* Bug #863: missing journals fixture at test/unit/issue_test.rb
+* Bug #950: jQuery AJAX requests don't include CSRF token
+* Bug #966: "edit own notes" fails since 3.1.0
+* Bug #967: Menu - Missing translations (French)
+* Bug #968: Forum threads aren't always displaying "Last Message"
+* Bug #969: Forum URLs in the menu are missing the project_id
+* Bug #970: Long version titles extend outside the group menu when expanding Roadmap
+* Bug #974: menu link broken in duplicate issue mode
+* Bug #975: Start Date is not saved for Versions
+* Bug #984: Cannot unlock a forum thread
+* Bug #986: Notification Mail for Wiki-Changes doesn't contain change comment
+* Bug #994: select all in issue list isn't working
+* Bug #1007: Right clicking on item in roadmap displays menu at incorrect position
+* Bug #1008: error 500 when uploading a new file to an existing document
+* Bug #1024: Select multiple issues with shift key in issue list
+* Bug #1025: Rails: Unsafe Query Generation Risk in Ruby on Rails (CVE-2012-2660)
+* Bug #1033: Replace vendored gravatar lib by gem
+* Feature #749: Git Integration: Property Main Branch
+* Feature #947: Reformat the CSS files to use a standard
+* Feature #983: Bulgarian translation of several strings
+* Feature #988: Swedish translation of several strings
+* Feature #1016: Limit height of project drop down menu
+* Task #982: Updated czech localization for chiliproject 3.1
+
+== 2012-04-04 v3.1.0
+
+* Bug #739: Relative textile links not converted to full URLs in emails
+* Bug #828: uninitialized constant Redmine::Scm::Adapters::CommandFailed in RepositoryController
+* Bug #861: Apply Filter does not work on all-project-activities view
+* Bug #868: Done bar has no filling
+* Bug #869: Issue option list stacked vertically instead of horizontally
+* Bug #873: Incorrect error message text for groups
+* Bug #882: Right click context menu doesn't show submenu icon.
+* Bug #887: Stacked month (top row)
+* Bug #888: Cannot edit note
+* Bug #891: quotes around path when shelling out does not work on Windows
+* Bug #892: CP code or test assumes ordering where none is guaranteed
+* Bug #896: Enabling "Authentication required" mode returns 404s
+* Bug #903: ActionView::TemplateError (undefined method `new0' for DateTime:Class)
+* Bug #911: Sub-sub (and deeper) issues CSS rules are overridden
+* Bug #914: comments gets striked through, when description changes before
+* Bug #922: Mass assignment
+* Bug #927: Reposman script problem
+* Bug #929: Missing links in Issues section in left menu bar
+* Bug #933: News RSS Feed  tag not populating
+* Bug #939: GMail documentation in configuration.yml.default out of date
+* Feature #559: Group Menus
+* Feature #899: Create a jQuery verison of the context menu
+* Feature #906: Add Link back to Parent of Subtask
+* Feature #915: default bundle install installs old pg version
+* Feature #928: Increase username length limit from 30 to 60
+
 == 2012-02-06 v3.0.0
 
 * Bug #826: Top right toolbar items overlap for custom issues query

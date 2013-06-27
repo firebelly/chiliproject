@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -11,6 +11,8 @@
 #
 # See doc/COPYRIGHT.rdoc for more details.
 #++
+
+require 'wiki_content'
 
 class MergeWikiVersionsWithJournals < ActiveRecord::Migration
   # This is provided here for migrating up after the WikiContent::Version class has been removed
@@ -37,7 +39,7 @@ class MergeWikiVersionsWithJournals < ActiveRecord::Migration
       changes = {}
       changes["compression"] = wv.compression
       changes["data"] = wv.data
-      journal.update_attribute(:changes, changes.to_yaml)
+      journal.update_attribute(:changes, changes)
       journal.update_attribute(:version, wv.version)
     end
     # drop_table :wiki_content_versions

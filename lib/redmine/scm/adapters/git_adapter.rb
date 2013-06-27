@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -100,6 +100,13 @@ module Redmine
         def default_branch
           bras = self.branches
           return nil if bras.nil?
+           head = nil
+           scm_cmd('symbolic-ref', 'HEAD') do |io|
+             head = io.readline
+           end
+           /^refs\/heads\/(.*)$/.match(head)
+           bras.include?($1) ? $1 : bras.first
+         rescue ScmCommandAborted, EOFError
           bras.include?('master') ? 'master' : bras.first
         end
 

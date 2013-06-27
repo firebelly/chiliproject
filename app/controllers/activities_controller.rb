@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@ class ActivitiesController < ApplicationController
                                                              :with_subprojects => @with_subprojects,
                                                              :author => @author)
     @activity.scope_select {|t| !params["show_#{t}"].nil?}
-    @activity.scope = (@author.nil? ? :default : :all) if @activity.scope.empty?
+    @activity.scope = (@author.nil? ? :default : :all) if @activity.scope.empty? unless params[:set_filter]
 
     events = @activity.events(@date_from, @date_to)
 

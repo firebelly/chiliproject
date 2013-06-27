@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -99,6 +99,18 @@ class MessageTest < ActiveSupport::TestCase
     assert_equal topics_count - 1, board.topics_count
     assert_equal messages_count - 3, board.messages_count
     # Watchers removed
+  end
+
+  def test_destroy_last_reply
+    message = Message.find(4)
+    last_reply = message.last_reply
+    penultimate_reply = message.children[-2]
+
+    assert last_reply.destroy
+
+    message.reload
+
+    assert_equal penultimate_reply, message.last_reply
   end
 
   def test_destroy_reply

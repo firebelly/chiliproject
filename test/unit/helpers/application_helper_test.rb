@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,6 +25,10 @@ class ApplicationHelperTest < ActionView::TestCase
 
   def setup
     super
+  end
+
+  def request
+    @request ||= ActionController::TestRequest.new
   end
 
   context "#link_to_if_authorized" do
@@ -142,6 +146,34 @@ RAW
       '"test":http://foo"bar' => '<a href="http://foo&quot;bar" class="external">test</a>',
     }
     to_test.each { |text, result| assert_equal "<p>#{result}</p>", textilizable(text) }
+  end
+
+  def test_textile_relative_to_full_links_in_a_controller
+    # we have a request here
+    {
+      # shouldn't change non-relative links
+      'This is a "link":http://foo.bar' => 'This is a <a href="http://foo.bar" class="external">link</a>',
+      'This is an intern "link":/foo/bar' => 'This is an intern <a href="http://test.host/foo/bar">link</a>',
+      'This is an intern "link":/foo/bar and an extern "link":http://foo.bar' => 'This is an intern <a href="http://test.host/foo/bar">link</a> and an extern <a href="http://foo.bar" class="external">link</a>',
+    }.each { |text, result| assert_equal "<p>#{result}</p>", textilizable(text, :only_path => false) }
+  end
+
+  def test_textile_relative_to_full_links_in_the_mailer
+    # we don't a request here
+    undef request
+    # mimic the mailer default_url_options
+    @controller.class.class_eval {
+      def self.default_url_options
+        ::Mailer.default_url_options
+      end
+    }
+
+    {
+      # shouldn't change non-relative links
+      'This is a "link":http://foo.bar' => 'This is a <a href="http://foo.bar" class="external">link</a>',
+      'This is an intern "link":/foo/bar' => 'This is an intern <a href="http://localhost:3000/foo/bar">link</a>',
+      'This is an intern "link":/foo/bar and an extern "link":http://foo.bar' => 'This is an intern <a href="http://localhost:3000/foo/bar">link</a> and an extern <a href="http://foo.bar" class="external">link</a>',
+    }.each { |text, result| assert_equal "<p>#{result}</p>", textilizable(text, :only_path => false) }
   end
 
   def test_redmine_links
@@ -441,7 +473,7 @@ RAW
 
     expected = <<-EXPECTED
 <p><a href="/projects/ecookbook/wiki/CookBook_documentation" class="wiki-page">CookBook documentation</a></p>
-<p><a href="/issues/1" class="issue status-1 priority-1" title="Can't print recipes (New)">#1</a></p>
+<p><a href="/issues/1" class="issue status-1 priority-1" title="Can&#39;t print recipes (New)">#1</a></p>
 <pre>
 [[CookBook documentation]]
 
@@ -632,6 +664,14 @@ RAW
     Setting.gravatar_enabled = '1'
     assert avatar(User.find_by_mail('jsmith@somenet.foo')).include?(Digest::MD5.hexdigest('jsmith@somenet.foo'))
     assert avatar('jsmith <jsmith@somenet.foo>').include?(Digest::MD5.hexdigest('jsmith@somenet.foo'))
+    # Default size is 50
+    assert avatar('jsmith <jsmith@somenet.foo>').include?('s=50')
+    assert avatar('jsmith <jsmith@somenet.foo>', :size => 24).include?('s=24')
+    # Non-avatar options should be considered html options
+    assert avatar('jsmith <jsmith@somenet.foo>', :title => 'John Smith').include?('title="John Smith"')
+    # The default class of the img tag should be gravatar
+    assert avatar('jsmith <jsmith@somenet.foo>').include?('class="gravatar"')
+    assert !avatar('jsmith <jsmith@somenet.foo>', :class => 'picture').include?('class="gravatar"')
     assert_nil avatar('jsmith')
     assert_nil avatar(nil)
 

@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -220,6 +220,28 @@ class QueryTest < ActiveSupport::TestCase
     query.add_filter('subject', '!~', ['uNable'])
     assert query.statement.include?("LOWER(#{Issue.table_name}.subject) NOT LIKE '%unable%'")
     find_issues_with_query(query)
+  end
+
+  def test_user_custom_field_filtered_on_me
+    User.current = User.find(2)
+    cf = IssueCustomField.create!(:field_format => 'user', :is_for_all => true, :is_filter => true, :name => 'User custom field', :tracker_ids => [1])
+
+    project = Project.find(1)
+    tracker = Tracker.find(1)
+    project.trackers << tracker unless project.trackers.include?(tracker)
+
+    issue = Issue.create!(:project => project, :tracker => tracker, :subject => 'Test', :author_id => 1)
+    issue.update_attribute(:custom_field_values, {cf.id.to_s => '2'})
+
+    query = Query.new(:name => '_', :project => project)
+    filter = query.available_filters["cf_#{cf.id}"]
+    assert_not_nil filter
+    assert filter[:values].map{|v| v[1]}.include?('me')
+
+    query.filters = { "cf_#{cf.id}" => {:operator => '=', :values => ['me']}}
+    result = query.issues
+    assert_equal 1, result.size
+    assert_equal issue, result.first
   end
 
   def test_filter_watched_issues

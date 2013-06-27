@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,18 +31,6 @@ class ApplicationController < ActionController::Base
     cookies.delete(:autologin)
   end
 
-  # Remove broken cookie after upgrade from 0.8.x (#4292)
-  # See https://rails.lighthouseapp.com/projects/8994/tickets/3360
-  # TODO: remove it when Rails is fixed
-  before_filter :delete_broken_cookies
-  def delete_broken_cookies
-    if cookies['_chiliproject_session'] && cookies['_chiliproject_session'] !~ /--/
-      cookies.delete '_chiliproject_session'
-      redirect_to home_path
-      return false
-    end
-  end
-
   # FIXME: Remove this when all of Rack and Rails have learned how to
   # properly use encodings
   before_filter :params_filter
@@ -64,10 +52,16 @@ class ApplicationController < ActionController::Base
   before_filter :user_setup, :check_if_login_required, :set_localization
   filter_parameter_logging :password
 
-  rescue_from ActionController::InvalidAuthenticityToken, :with => :invalid_authenticity_token
   # FIXME: This doesn't work with Rails >= 3.0 anymore
   # Possible workaround: https://github.com/rails/rails/issues/671#issuecomment-1780159
-  rescue_from ActionController::RoutingError, :with => proc{render_404}
+  rescue_from ActionController::RoutingError, :with => proc{
+    # manually apply basic before_filters which aren't applied by default here
+    user_setup
+    check_if_login_required
+    set_localization
+
+    render_404
+  }
 
   include Redmine::Search::Controller
   include Redmine::MenuManager::MenuController
@@ -95,11 +89,11 @@ class ApplicationController < ActionController::Base
       user
     elsif params[:format] == 'atom' && params[:key] && accept_key_auth_actions.include?(params[:action])
       # RSS key authentication does not start a session
-      User.find_by_rss_key(params[:key])
+      User.find_by_rss_key(params[:key].to_s)
     elsif Setting.rest_api_enabled? && api_request?
       if (key = api_key_from_request) && accept_key_auth_actions.include?(params[:action])
         # Use API key
-        User.find_by_api_key(key)
+        User.find_by_api_key(key.to_s)
       else
         # HTTP Basic, either username/password or API key/random
         authenticate_with_http_basic do |username, password|
@@ -334,13 +328,6 @@ class ApplicationController < ActionController::Base
   # @return [boolean, string] name of the layout to use or false for no layout
   def use_layout
     request.xhr? ? false : 'base'
-  end
-
-  def invalid_authenticity_token
-    if api_request?
-      logger.error "Form authenticity token is missing or is invalid. API calls must include a proper Content-type header (text/xml or text/json)."
-    end
-    render_error "Invalid form authenticity token."
   end
 
   def render_feed(items, options={})

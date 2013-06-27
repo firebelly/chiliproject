@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -59,7 +59,8 @@ class ProjectsController < ApplicationController
   def new
     @issue_custom_fields = IssueCustomField.find(:all, :order => "#{CustomField.table_name}.position")
     @trackers = Tracker.all
-    @project = Project.new(params[:project])
+    @project = Project.new
+    @project.safe_attributes = params[:project]
   end
 
   verify :method => :post, :only => :create, :render => {:nothing => true, :status => :method_not_allowed }

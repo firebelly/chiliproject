@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@ class WikisController < ApplicationController
   # Create or update a project's wiki
   def edit
     @wiki = @project.wiki || Wiki.new(:project => @project)
-    @wiki.attributes = params[:wiki]
+    @wiki.safe_attributes = params[:wiki]
     @wiki.save if request.post?
     render(:update) {|page| page.replace_html "tab-content-wiki", :partial => 'projects/settings/wiki'}
   end

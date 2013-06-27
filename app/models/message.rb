@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,6 +13,7 @@
 #++
 
 class Message < ActiveRecord::Base
+  include Redmine::SafeAttributes
   belongs_to :board
   belongs_to :author, :class_name => 'User', :foreign_key => 'author_id'
   acts_as_tree :counter_cache => :replies_count, :order => "#{Message.table_name}.created_on ASC"
@@ -40,7 +41,6 @@ class Message < ActiveRecord::Base
 
   acts_as_watchable
 
-  attr_protected :locked, :sticky
   validates_presence_of :board, :subject, :content
   validates_length_of :subject, :maximum => 255
 
@@ -48,6 +48,12 @@ class Message < ActiveRecord::Base
 
   named_scope :visible, lambda {|*args| { :include => {:board => :project},
                                           :conditions => Project.allowed_to_condition(args.first || User.current, :view_messages) } }
+
+  safe_attributes 'subject', 'content'
+  safe_attributes 'locked', 'sticky', 'board_id',
+    :if => lambda {|message, user|
+      user.allowed_to?(:edit_messages, message.project)
+    }
 
   def visible?(user=User.current)
     !user.nil? && user.allowed_to?(:view_messages, project)
@@ -74,7 +80,13 @@ class Message < ActiveRecord::Base
   end
 
   def after_destroy
+    parent.reset_last_reply_id! if parent
     board.reset_counters!
+  end
+
+  def reset_last_reply_id!
+    clid = children.present? ? children.last.id : nil
+    self.update_attribute(:last_reply_id, clid)
   end
 
   def sticky=(arg)

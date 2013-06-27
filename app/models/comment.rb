@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,8 +13,11 @@
 #++
 
 class Comment < ActiveRecord::Base
+  include Redmine::SafeAttributes
   belongs_to :commented, :polymorphic => true, :counter_cache => true
   belongs_to :author, :class_name => 'User', :foreign_key => 'author_id'
 
   validates_presence_of :commented, :author, :comments
+
+  safe_attributes 'comments'
 end

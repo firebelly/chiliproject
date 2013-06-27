@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,6 +13,7 @@
 #++
 
 class Wiki < ActiveRecord::Base
+  include Redmine::SafeAttributes
   belongs_to :project
   has_many :pages, :class_name => 'WikiPage', :dependent => :destroy, :order => 'title'
   has_many :redirects, :class_name => 'WikiRedirect', :dependent => :delete_all
@@ -21,6 +22,8 @@ class Wiki < ActiveRecord::Base
 
   validates_presence_of :start_page
   validates_format_of :start_page, :with => /^[^,\.\/\?\;\|\:]*$/
+
+  safe_attributes 'start_page'
 
   def visible?(user=User.current)
     !user.nil? && user.allowed_to?(:view_wiki_pages, project)

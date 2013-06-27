@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -76,6 +76,22 @@ module IssuesHelper
              :class => "issue issue-#{child.id} hascontextmenu #{level > 0 ? "idnt idnt-#{level}" : nil}")
     end
     s << '</form></table>'
+    s
+  end
+
+  def render_parents_and_subtree(issue)
+    return if issue.leaf? && !issue.parent
+    s = '<form><table id="issue_tree" class="list">'
+    issue_list(issue.self_and_ancestors.sort_by(&:lft) + issue.descendants.sort_by(&:lft)) do |el, level|
+      s << content_tag('tr',
+             content_tag('td', check_box_tag("ids[]", el.id, false, :id => nil), :class => 'checkbox') +
+             content_tag('td', link_to_issue(el, :truncate => 60), :class => 'subject') +
+             content_tag('td', h(el.status)) +
+             content_tag('td', link_to_user(el.assigned_to)) +
+             content_tag('td', progress_bar(el.done_ratio, :width => '80px')),
+             :class => "issue issue-#{el.id} #{"self" if el == issue} hascontextmenu #{level > 0 ? "idnt idnt-#{level}" : nil}")
+    end
+    s << '</table></form>'
     s
   end
 

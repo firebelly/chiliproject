@@ -808,6 +808,8 @@ en:
   label_api_access_key_created_on: "API access key created %{value} ago"
   label_profile: Profile
   label_subtask_plural: Subtasks
+  label_subtask_add: Add a subtask
+  label_issue_hierarchy: Issue hierarchy
   label_project_copy_notifications: Send email notifications during the project copy
   label_principal_search: "Search for user or group:"
   label_user_search: "Search for user:"
@@ -827,6 +829,9 @@ en:
   label_mail_handler_confirmation: "Confirmation of email submission: %{subject}"
   label_mail_handler_failure: "Failed email submission: %{subject}"
   label_mail_handler_errors_with_submission: "There were errors with your email submission:"
+  label_time_entries: Time entries
+  label_new_time_entry: New time entry
+  label_time_entry_report: Time entry report
 
   button_login: Login
   button_submit: Submit

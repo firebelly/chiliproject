@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -59,9 +59,24 @@ module ChiliProject
       # Example:
       #    {{ product.images | last | to_img }}
       def last(array, count=nil)
-        array.last if count=nil? && array.respond_to?(:last)
+        return array.last if count.nil? && array.respond_to?(:last)
         if array.respond_to?(:[])
           count.to_i > 0 ? array[(count.to_i * -1)..-1] : []
+        end
+      end
+
+      def date(input, format=nil)
+        if format.nil?
+          return "" unless input
+          if Setting.date_format.blank?
+            input = super(input, '%Y-%m-%d')
+            return ::I18n.l(input.to_date) if input.respond_to?(:to_date)
+            input # default return value
+          else
+            super(input, Setting.date_format)
+          end
+        else
+          super
         end
       end
     end

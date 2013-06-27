@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ class ProjectTest < ActiveSupport::TestCase
     end
 
     assert_equal Tracker.all, Project.new.trackers
-    assert_equal Tracker.find(1, 3), Project.new(:tracker_ids => [1, 3]).trackers
+    assert_equal Tracker.find(1, 3).sort_by(&:id), Project.new(:tracker_ids => [1, 3]).trackers.sort_by(&:id)
   end
 
   def test_update

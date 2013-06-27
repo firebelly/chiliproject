@@ -2,7 +2,7 @@
 #-- copyright
 # ChiliProject is a project management system.
 #
-# Copyright (C) 2010-2012 the ChiliProject Team
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -221,7 +221,7 @@ Redmine::MenuManager.map :project_menu do |menu|
     visible = ARCondition.new(["is_public = ? OR user_id = ?", true, (User.current.logged? ? User.current.id : 0)])
     # Project specific queries and global queries
     visible << (p.nil? ? ["project_id IS NULL"] : ["project_id IS NULL OR project_id = ?", p.id])
-    sidebar_queries = Query.find(:all, 
+    sidebar_queries = Query.find(:all,
                                  :select => 'id, name',
                                  :order => "name ASC",
                                  :conditions => visible.conditions)
@@ -234,7 +234,7 @@ Redmine::MenuManager.map :project_menu do |menu|
                                          })
     end
   }
-  
+
   menu.push(:overview, { :controller => 'projects', :action => 'show' })
   menu.push(:activity, { :controller => 'activities', :action => 'index' })
   menu.push(:roadmap, { :controller => 'versions', :action => 'index' }, {
@@ -259,7 +259,7 @@ Redmine::MenuManager.map :project_menu do |menu|
               :caption => :label_issue_plural,
               :children => issue_query_proc
             })
-  menu.push(:new_issue, { :controller => 'issues', :action => 'new' }, {
+  menu.push(:new_issue, { :controller => 'issues', :action => 'new', :copy_from => nil }, {
               :param => :project_id,
               :caption => :label_issue_new,
               :parent => :issues,
@@ -269,7 +269,7 @@ Redmine::MenuManager.map :project_menu do |menu|
               :param => :project_id,
               :caption => :field_issue_view_all_open,
               :parent => :issues
-            })  
+            })
   menu.push(:new_query, { :controller => 'queries', :action => 'new'}, {
               :param => :project_id,
               :caption => :field_new_saved_query,
@@ -345,7 +345,7 @@ Redmine::MenuManager.map :project_menu do |menu|
                 project.boards.collect do |board|
                   Redmine::MenuManager::MenuItem.new(
                                                      "board-#{board.id}".to_sym,
-                                                     { :controller => 'boards', :action => 'show', :id => board },
+                                                     { :controller => 'boards', :action => 'show', :project_id => project, :id => board },
                                                      {
                                                        :caption => board.name # is h() in menu_helper.rb
                                                      })

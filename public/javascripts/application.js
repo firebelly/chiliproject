@@ -467,16 +467,23 @@ jQuery.viewportHeight = function() {
 
 // Automatically use format.js for jQuery Ajax
 jQuery.ajaxSetup({
-  'beforeSend': function(xhr) {xhr.setRequestHeader("Accept", "text/javascript")}
-})
+    'beforeSend': function(xhr) {
+        xhr.setRequestHeader("Accept", "text/javascript");
 
-// Show/hide the ajax indicators
-jQuery("#ajax-indicator").ajaxStart(function(){ jQuery(this).show().css('z-index', '9999');  });
-jQuery("#ajax-indicator").ajaxStop(function(){ jQuery(this).hide();  });
+        // TODO: Remove once jquery-rails (Rails 3) has been added a dependency
+        var csrf_meta_tag = jQuery('meta[name="csrf-token"]');
+        if (csrf_meta_tag) {
+            xhr.setRequestHeader('X-CSRF-Token', csrf_meta_tag.attr('content'));
+        }
+    }
+})
 
 /* TODO: integrate with existing code and/or refactor */
 jQuery(document).ready(function($) {
 
+    // Show/hide the ajax indicators
+    jQuery("#ajax-indicator").ajaxStart(function(){ jQuery(this).show().css('z-index', '9999');  });
+    jQuery("#ajax-indicator").ajaxStop(function(){ jQuery(this).hide();  });
 
 	// file table thumbnails
 	$("table a.has-thumb").hover(function() {
@@ -564,6 +571,13 @@ jQuery(document).ready(function($) {
   // Click on the menu header with a dropdown menu
   $('#account-nav .drop-down').live('click', function(event) {
     var menuItem = $(this);
+    var menuUl = menuItem.find('> ul');
+
+    menuUl.css('height', 'auto');
+    if(menuUl.height() > $.viewportHeight()) {
+      var windowHeight = $.viewportHeight() - 150;
+      menuUl.css({'height': windowHeight});
+    }
 
     toggleTopMenu(menuItem);
 
@@ -644,4 +658,9 @@ jQuery(document).ready(function($) {
   }
 
   setUpDialogWindow();
+
+  if(Modernizr.inputtypes.date === false) {
+      $('input[type="date"]').datepicker(datepickerSettings)
+          .filter('[disabled="disabled"]').datepicker('disable');
+  }
 });
